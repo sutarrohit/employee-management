@@ -1,7 +1,17 @@
 import { createRoute, z } from "@hono/zod-openapi";
 import * as HttpStatusCodes from "stoker/http-status-codes";
 import { jsonContent } from "stoker/openapi/helpers";
-import { CreateEmployeeSchema, EmployeeSchema, UpdateEmployeeSchema } from "../../types/types.js";
+import { CreateEmployeeSchema, EmployeeFiltersSchema, EmployeeSchema, UpdateEmployeeSchema } from "../../types/types.js";
+
+const PaginatedEmployeeSchema = z.object({
+  data: z.array(EmployeeSchema),
+  pagination: z.object({
+    page: z.number(),
+    pageSize: z.number(),
+    total: z.number(),
+    totalPages: z.number()
+  })
+});
 
 export const createEmployee = createRoute({
   tags: ["Employee"],
@@ -33,6 +43,18 @@ export const getEmployeeById = createRoute({
   responses: {
     [HttpStatusCodes.OK]: jsonContent(EmployeeSchema, "Get employee by id"),
     [HttpStatusCodes.NOT_FOUND]: jsonContent(EmployeeSchema.nullable(), "Not found")
+  }
+});
+
+export const getEmployees = createRoute({
+  tags: ["Employee"],
+  method: "get",
+  path: "/employee",
+  request: {
+    query: EmployeeFiltersSchema
+  },
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(PaginatedEmployeeSchema, "Get employees")
   }
 });
 
@@ -77,5 +99,6 @@ export const deleteEmployee = createRoute({
 
 export type createEmployee = typeof createEmployee;
 export type getEmployeeById = typeof getEmployeeById;
+export type getEmployees = typeof getEmployees;
 export type updateEmployee = typeof updateEmployee;
 export type deleteEmployee = typeof deleteEmployee;

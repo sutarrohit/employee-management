@@ -5,6 +5,7 @@ import * as routes from "./employee.route.js";
 
 const employeeRoutes = createRouter()
   .openapi(routes.createEmployee, handlers.createNewEmployeeHandler)
+  .openapi(routes.getEmployees, handlers.getEmployeesHandler)
   .openapi(routes.getEmployeeById, handlers.getEmployeeByIdHandler)
   .openapi(routes.updateEmployee, handlers.updateEmployeeHandler)
   .openapi(routes.deleteEmployee, handlers.deleteEmployeeHandler);

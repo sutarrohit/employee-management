@@ -275,14 +275,14 @@ describe("getEmployees service", () => {
     expect(findManyMock).toHaveBeenCalledWith({
       where: {
         OR: [
-          { fullName: { contains: "Jane" } },
-          { email: { contains: "Jane" } },
-          { jobTitle: { contains: "Jane" } }
+          { fullName: { contains: "Jane", mode: "insensitive" } },
+          { email: { contains: "Jane", mode: "insensitive" } },
+          { jobTitle: { contains: "Jane", mode: "insensitive" } }
         ],
-        country: "IN",
-        department: "Product",
-        jobTitle: "Designer",
-        employmentType: "Full-time"
+        country: { equals: "IN", mode: "insensitive" },
+        department: { equals: "Product", mode: "insensitive" },
+        jobTitle: { equals: "Designer", mode: "insensitive" },
+        employmentType: { equals: "Full-time", mode: "insensitive" }
       },
       orderBy: { salary: "desc" },
       skip: 2,
@@ -291,14 +291,14 @@ describe("getEmployees service", () => {
     expect(countMock).toHaveBeenCalledWith({
       where: {
         OR: [
-          { fullName: { contains: "Jane" } },
-          { email: { contains: "Jane" } },
-          { jobTitle: { contains: "Jane" } }
+          { fullName: { contains: "Jane", mode: "insensitive" } },
+          { email: { contains: "Jane", mode: "insensitive" } },
+          { jobTitle: { contains: "Jane", mode: "insensitive" } }
         ],
-        country: "IN",
-        department: "Product",
-        jobTitle: "Designer",
-        employmentType: "Full-time"
+        country: { equals: "IN", mode: "insensitive" },
+        department: { equals: "Product", mode: "insensitive" },
+        jobTitle: { equals: "Designer", mode: "insensitive" },
+        employmentType: { equals: "Full-time", mode: "insensitive" }
       }
     });
     expect(result).toEqual({
@@ -308,6 +308,43 @@ describe("getEmployees service", () => {
         pageSize: 2,
         total: 5,
         totalPages: 3
+      }
+    });
+  });
+
+  it("normalizes whitespace and matches filters case-insensitively", async () => {
+    findManyMock.mockResolvedValue([]);
+    countMock.mockResolvedValue(0);
+
+    await getEmployees({
+      search: "  Data     Analyst  ",
+      country: "india",
+      jobTitle: "Data     Analyst"
+    });
+
+    expect(findManyMock).toHaveBeenCalledWith({
+      where: {
+        OR: [
+          { fullName: { contains: "Data Analyst", mode: "insensitive" } },
+          { email: { contains: "Data Analyst", mode: "insensitive" } },
+          { jobTitle: { contains: "Data Analyst", mode: "insensitive" } }
+        ],
+        country: { equals: "india", mode: "insensitive" },
+        jobTitle: { equals: "Data Analyst", mode: "insensitive" }
+      },
+      orderBy: { fullName: "asc" },
+      skip: 0,
+      take: 20
+    });
+    expect(countMock).toHaveBeenCalledWith({
+      where: {
+        OR: [
+          { fullName: { contains: "Data Analyst", mode: "insensitive" } },
+          { email: { contains: "Data Analyst", mode: "insensitive" } },
+          { jobTitle: { contains: "Data Analyst", mode: "insensitive" } }
+        ],
+        country: { equals: "india", mode: "insensitive" },
+        jobTitle: { equals: "Data Analyst", mode: "insensitive" }
       }
     });
   });

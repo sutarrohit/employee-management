@@ -5,6 +5,7 @@ import type { CreateEmployee, EmployeeFilters, PaginatedResult, UpdateEmployee }
 import { NOT_FOUND } from "stoker/http-status-codes";
 import { NOT_FOUND as NOT_FOUND_PHRASE } from "stoker/http-status-phrases";
 
+// Creates a new employee record with normalized default values.
 export async function createEmployee(data: CreateEmployee) {
   return await prisma.employee.create({
     data: {
@@ -15,12 +16,14 @@ export async function createEmployee(data: CreateEmployee) {
   });
 }
 
+// Fetches a single employee by id and throws when no record exists.
 export async function getEmployeeById(id: string) {
   const employee = await prisma.employee.findUnique({ where: { id } });
   if (!employee) throw new ApiError(NOT_FOUND, NOT_FOUND_PHRASE, "Employee not found");
   return employee;
 }
 
+// Updates an existing employee after verifying the record exists.
 export async function updateEmployee(id: string, data: UpdateEmployee) {
   await getEmployeeById(id);
 
@@ -33,27 +36,44 @@ export async function updateEmployee(id: string, data: UpdateEmployee) {
   });
 }
 
+// Deletes an employee after verifying the record exists.
 export async function deleteEmployee(id: string) {
   await getEmployeeById(id);
   await prisma.employee.delete({ where: { id } });
 }
 
+// Normalizes user-entered filter text by trimming and collapsing whitespace.
+function normalizeFilterValue(value?: string) {
+  const normalized = value?.trim().replace(/\s+/g, " ");
+  return normalized ? normalized : undefined;
+}
+
+// Builds the Prisma where clause for employee list filtering and search.
 function buildEmployeeWhere(filters: EmployeeFilters): Prisma.EmployeeWhereInput {
-  const search = filters.search?.trim();
+  const search = normalizeFilterValue(filters.search);
+  const country = normalizeFilterValue(filters.country);
+  const department = normalizeFilterValue(filters.department);
+  const jobTitle = normalizeFilterValue(filters.jobTitle);
+  const employmentType = normalizeFilterValue(filters.employmentType);
 
   return {
     ...(search
       ? {
-          OR: [{ fullName: { contains: search } }, { email: { contains: search } }, { jobTitle: { contains: search } }]
+          OR: [
+            { fullName: { contains: search, mode: "insensitive" } },
+            { email: { contains: search, mode: "insensitive" } },
+            { jobTitle: { contains: search, mode: "insensitive" } }
+          ]
         }
       : {}),
-    ...(filters.country ? { country: filters.country } : {}),
-    ...(filters.department ? { department: filters.department } : {}),
-    ...(filters.jobTitle ? { jobTitle: filters.jobTitle } : {}),
-    ...(filters.employmentType ? { employmentType: filters.employmentType } : {})
+    ...(country ? { country: { equals: country, mode: "insensitive" } } : {}),
+    ...(department ? { department: { equals: department, mode: "insensitive" } } : {}),
+    ...(jobTitle ? { jobTitle: { equals: jobTitle, mode: "insensitive" } } : {}),
+    ...(employmentType ? { employmentType: { equals: employmentType, mode: "insensitive" } } : {})
   };
 }
 
+// Returns a paginated employee list using the provided filters and sorting.
 export async function getEmployees(
   filters: EmployeeFilters
 ): Promise<PaginatedResult<Awaited<ReturnType<typeof prisma.employee.findMany>>[number]>> {
