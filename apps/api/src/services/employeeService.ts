@@ -16,8 +16,6 @@ export async function createEmployee(data: CreateEmployee) {
 
 export async function getEmployeeById(id: string) {
   const employee = await prisma.employee.findUnique({ where: { id } });
-
   if (!employee) throw new ApiError(NOT_FOUND, NOT_FOUND_PHRASE, "Employee not found");
-
   return employee;
 }
