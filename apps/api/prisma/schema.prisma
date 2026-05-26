@@ -7,17 +7,20 @@ generator client {
   output   = "./generated"
 }
 
-model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
-  posts Post[]
-}
+model Employee {
+  id             String   @id @default(uuid())
+  fullName       String
+  jobTitle       String
+  department     String
+  country        String
+  salary         Float
+  currency       String   @default("USD")
+  email          String   @unique
+  employmentType String   @default("Full-time")
+  hireDate       DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-model Post {
-  id        Int     @id @default(autoincrement())
-  title     String
-  published Boolean @default(false)
-  author    User?   @relation(fields: [authorId], references: [id])
-  authorId  Int?
+  @@index([country])
+  @@index([country, jobTitle])
 }
