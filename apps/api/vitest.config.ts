@@ -7,12 +7,12 @@ export default defineConfig({
     include: ["src/**/*.test.ts", "tests/**/*.test.ts"],
     coverage: {
       provider: "v8",
-      include: ["src/routes/**/*.ts"]
-    }
+      include: ["src/routes/**/*.ts"],
+    },
   },
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src")
-    }
-  }
+      "@": path.resolve(__dirname, "."),
+    },
+  },
 });
