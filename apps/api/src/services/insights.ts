@@ -69,3 +69,28 @@ export async function getSalaryByDepartment(): Promise<DepartmentInsight[]> {
     totalPayroll: Number(row._sum.salary ?? 0)
   }));
 }
+
+
+
+export async function getSalaryDistribution(): Promise<SalaryBand[]> {
+  const salaries = await prisma.employee.findMany({
+    select: { salary: true }
+  });
+
+  const bands = [
+    { band: "0-30k", min: 0, max: 30_000, count: 0 },
+    { band: "30k-60k", min: 30_000, max: 60_000, count: 0 },
+    { band: "60k-90k", min: 60_000, max: 90_000, count: 0 },
+    { band: "90k-120k", min: 90_000, max: 120_000, count: 0 },
+    { band: "120k+", min: 120_000, max: Number.POSITIVE_INFINITY, count: 0 }
+  ];
+
+  for (const { salary } of salaries) {
+    const bucket = bands.find((item) => salary >= item.min && salary < item.max);
+    if (bucket) {
+      bucket.count += 1;
+    }
+  }
+
+  return bands.map(({ band, count }) => ({ band, count }));
+}
