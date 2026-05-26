@@ -3,11 +3,13 @@ import * as HttpStatusCodes from "stoker/http-status-codes";
 import {
   getSalaryByCountry,
   getSalaryByDepartment,
+  getSalaryDistribution,
   getSalaryByJobTitle,
 } from "@/src/services/insights.js";
 import {
   getSalaryByCountry as getSalaryByCountryRoute,
   getSalaryByDepartment as getSalaryByDepartmentRoute,
+  getSalaryDistribution as getSalaryDistributionRoute,
   getSalaryByJobTitle as getSalaryByJobTitleRoute,
 } from "./insights.route.js";
 
@@ -22,6 +24,13 @@ export const getSalaryByDepartmentHandler: AppRouteHandler<
   getSalaryByDepartmentRoute
 > = async (c) => {
   const insights = await getSalaryByDepartment();
+  return c.json(insights, HttpStatusCodes.OK);
+};
+
+export const getSalaryDistributionHandler: AppRouteHandler<
+  getSalaryDistributionRoute
+> = async (c) => {
+  const insights = await getSalaryDistribution();
   return c.json(insights, HttpStatusCodes.OK);
 };
 

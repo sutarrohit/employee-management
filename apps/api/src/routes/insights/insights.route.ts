@@ -6,6 +6,7 @@ import {
   CountryInsightSchema,
   DepartmentInsightSchema,
   JobTitleInsightSchema,
+  SalaryBandSchema,
 } from "../../types/types.js";
 
 export const getSalaryByCountry = createRoute({
@@ -49,6 +50,19 @@ export const getSalaryByDepartment = createRoute({
   },
 });
 
+export const getSalaryDistribution = createRoute({
+  tags: ["Insights"],
+  method: "get",
+  path: "/insights/salary-distribution",
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(
+      z.array(SalaryBandSchema),
+      "Get salary distribution across predefined bands",
+    ),
+  },
+});
+
 export type getSalaryByJobTitle = typeof getSalaryByJobTitle;
 export type getSalaryByCountry = typeof getSalaryByCountry;
 export type getSalaryByDepartment = typeof getSalaryByDepartment;
+export type getSalaryDistribution = typeof getSalaryDistribution;
