@@ -1,14 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { getSalaryByCountry, getSalaryByJobTitle } from "@/src/services/insights.js";
+import {
+  getSalaryByCountry,
+  getSalaryByDepartment,
+  getSalaryByJobTitle,
+} from "@/src/services/insights.js";
 
 const groupByMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@/src/lib/prisma.js", () => ({
   prisma: {
     employee: {
-      groupBy: groupByMock
-    }
-  }
+      groupBy: groupByMock,
+    },
+  },
 }));
 
 describe("getSalaryByCountry service", () => {
@@ -24,7 +28,7 @@ describe("getSalaryByCountry service", () => {
         _avg: { salary: 75000 },
         _min: { salary: 50000 },
         _max: { salary: 100000 },
-        _sum: { salary: 150000 }
+        _sum: { salary: 150000 },
       },
       {
         country: "United States",
@@ -32,8 +36,8 @@ describe("getSalaryByCountry service", () => {
         _avg: { salary: 120000 },
         _min: { salary: 120000 },
         _max: { salary: 120000 },
-        _sum: { salary: 120000 }
-      }
+        _sum: { salary: 120000 },
+      },
     ]);
 
     const result = await getSalaryByCountry();
@@ -45,7 +49,7 @@ describe("getSalaryByCountry service", () => {
       _min: { salary: true },
       _max: { salary: true },
       _sum: { salary: true },
-      orderBy: { country: "asc" }
+      orderBy: { country: "asc" },
     });
     expect(result).toEqual([
       {
@@ -54,7 +58,7 @@ describe("getSalaryByCountry service", () => {
         avgSalary: 75000,
         minSalary: 50000,
         maxSalary: 100000,
-        totalPayroll: 150000
+        totalPayroll: 150000,
       },
       {
         country: "United States",
@@ -62,8 +66,8 @@ describe("getSalaryByCountry service", () => {
         avgSalary: 120000,
         minSalary: 120000,
         maxSalary: 120000,
-        totalPayroll: 120000
-      }
+        totalPayroll: 120000,
+      },
     ]);
   });
 
@@ -75,8 +79,8 @@ describe("getSalaryByCountry service", () => {
         _avg: { salary: null },
         _min: { salary: null },
         _max: { salary: null },
-        _sum: { salary: null }
-      }
+        _sum: { salary: null },
+      },
     ]);
 
     const result = await getSalaryByCountry();
@@ -88,8 +92,8 @@ describe("getSalaryByCountry service", () => {
         avgSalary: 0,
         minSalary: 0,
         maxSalary: 0,
-        totalPayroll: 0
-      }
+        totalPayroll: 0,
+      },
     ]);
   });
 });
@@ -107,7 +111,7 @@ describe("getSalaryByJobTitle service", () => {
         _count: { _all: 2 },
         _avg: { salary: 70000 },
         _min: { salary: 50000 },
-        _max: { salary: 90000 }
+        _max: { salary: 90000 },
       },
       {
         jobTitle: "Software Engineer",
@@ -115,8 +119,8 @@ describe("getSalaryByJobTitle service", () => {
         _count: { _all: 1 },
         _avg: { salary: 120000 },
         _min: { salary: 120000 },
-        _max: { salary: 120000 }
-      }
+        _max: { salary: 120000 },
+      },
     ]);
 
     const result = await getSalaryByJobTitle();
@@ -128,7 +132,7 @@ describe("getSalaryByJobTitle service", () => {
       _avg: { salary: true },
       _min: { salary: true },
       _max: { salary: true },
-      orderBy: [{ jobTitle: "asc" }, { country: "asc" }]
+      orderBy: [{ jobTitle: "asc" }, { country: "asc" }],
     });
     expect(result).toEqual([
       {
@@ -137,7 +141,7 @@ describe("getSalaryByJobTitle service", () => {
         employeeCount: 2,
         avgSalary: 70000,
         minSalary: 50000,
-        maxSalary: 90000
+        maxSalary: 90000,
       },
       {
         jobTitle: "Software Engineer",
@@ -145,8 +149,8 @@ describe("getSalaryByJobTitle service", () => {
         employeeCount: 1,
         avgSalary: 120000,
         minSalary: 120000,
-        maxSalary: 120000
-      }
+        maxSalary: 120000,
+      },
     ]);
   });
 
@@ -158,8 +162,8 @@ describe("getSalaryByJobTitle service", () => {
         _count: { _all: 0 },
         _avg: { salary: null },
         _min: { salary: null },
-        _max: { salary: null }
-      }
+        _max: { salary: null },
+      },
     ]);
 
     const result = await getSalaryByJobTitle("India");
@@ -171,7 +175,7 @@ describe("getSalaryByJobTitle service", () => {
       _avg: { salary: true },
       _min: { salary: true },
       _max: { salary: true },
-      orderBy: [{ jobTitle: "asc" }, { country: "asc" }]
+      orderBy: [{ jobTitle: "asc" }, { country: "asc" }],
     });
     expect(result).toEqual([
       {
@@ -180,8 +184,91 @@ describe("getSalaryByJobTitle service", () => {
         employeeCount: 0,
         avgSalary: 0,
         minSalary: 0,
-        maxSalary: 0
-      }
+        maxSalary: 0,
+      },
+    ]);
+  });
+});
+
+describe("getSalaryByDepartment service", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("groups employees by department and maps salary aggregates", async () => {
+    groupByMock.mockResolvedValue([
+      {
+        department: "Engineering",
+        _count: { _all: 3 },
+        _avg: { salary: 110000 },
+        _min: { salary: 80000 },
+        _max: { salary: 150000 },
+        _sum: { salary: 330000 },
+      },
+      {
+        department: "Marketing",
+        _count: { _all: 2 },
+        _avg: { salary: 85000 },
+        _min: { salary: 70000 },
+        _max: { salary: 100000 },
+        _sum: { salary: 170000 },
+      },
+    ]);
+
+    const result = await getSalaryByDepartment();
+
+    expect(groupByMock).toHaveBeenCalledWith({
+      by: ["department"],
+      _count: { _all: true },
+      _avg: { salary: true },
+      _min: { salary: true },
+      _max: { salary: true },
+      _sum: { salary: true },
+      orderBy: { department: "asc" },
+    });
+    expect(result).toEqual([
+      {
+        department: "Engineering",
+        employeeCount: 3,
+        avgSalary: 110000,
+        minSalary: 80000,
+        maxSalary: 150000,
+        totalPayroll: 330000,
+      },
+      {
+        department: "Marketing",
+        employeeCount: 2,
+        avgSalary: 85000,
+        minSalary: 70000,
+        maxSalary: 100000,
+        totalPayroll: 170000,
+      },
+    ]);
+  });
+
+  it("falls back to zero when salary aggregates are null", async () => {
+    groupByMock.mockResolvedValue([
+      {
+        department: "Sales",
+        _count: { _all: 0 },
+        _avg: { salary: null },
+        _min: { salary: null },
+        _max: { salary: null },
+        _sum: { salary: null },
+      },
+    ]);
+
+    const result = await getSalaryByDepartment();
+
+    expect(result).toEqual([
+      {
+        department: "Sales",
+        employeeCount: 0,
+        avgSalary: 0,
+        minSalary: 0,
+        maxSalary: 0,
+        totalPayroll: 0,
+      },
     ]);
   });
 });
