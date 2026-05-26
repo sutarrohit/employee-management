@@ -31,3 +31,8 @@ export async function updateEmployee(id: string, data: UpdateEmployee) {
     }
   });
 }
+
+export async function deleteEmployee(id: string) {
+  await getEmployeeById(id);
+  await prisma.employee.delete({ where: { id } });
+}
