@@ -48,3 +48,24 @@ export async function getSalaryByJobTitle(country?: string): Promise<JobTitleIns
     maxSalary: Number(row._max.salary ?? 0)
   }));
 }
+
+export async function getSalaryByDepartment(): Promise<DepartmentInsight[]> {
+  const rows = await prisma.employee.groupBy({
+    by: ["department"],
+    _count: { _all: true },
+    _avg: { salary: true },
+    _min: { salary: true },
+    _max: { salary: true },
+    _sum: { salary: true },
+    orderBy: { department: "asc" }
+  });
+
+  return rows.map((row) => ({
+    department: row.department,
+    employeeCount: row._count._all,
+    avgSalary: Number(row._avg.salary ?? 0),
+    minSalary: Number(row._min.salary ?? 0),
+    maxSalary: Number(row._max.salary ?? 0),
+    totalPayroll: Number(row._sum.salary ?? 0)
+  }));
+}
