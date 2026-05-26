@@ -16,7 +16,7 @@ export const EmployeeFiltersSchema = z.object({
   jobTitle: z.string().optional(),
   employmentType: z.string().optional(),
   sortBy: SortBySchema.optional(),
-  sortOrder: SortOrderSchema.optional(),
+  sortOrder: SortOrderSchema.optional()
 });
 export type EmployeeFilters = z.infer<typeof EmployeeFiltersSchema>;
 
@@ -25,13 +25,21 @@ export const CreateEmployeeSchema = z.object({
   jobTitle: z.string().min(1),
   department: z.string().min(1),
   country: z.string().min(1),
-  salary: z.number().positive("Salary must be positive"),
+  salary: z.number().positive(),
   currency: z.string().optional(),
-  email: z.email("Invalid email"),
+  email: z.email(),
   employmentType: z.string().min(1),
-  hireDate: z.string().or(z.date()).optional(),
+  hireDate: z.string().or(z.date()).optional()
 });
 export type CreateEmployee = z.infer<typeof CreateEmployeeSchema>;
+
+export const EmployeeSchema = CreateEmployeeSchema.extend({
+  id: z.string().uuid(),
+  hireDate: z.string().datetime(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime()
+});
+export type EmployeeResponse = z.infer<typeof EmployeeSchema>;
 
 export const UpdateEmployeeSchema = CreateEmployeeSchema.partial();
 export type UpdateEmployee = z.infer<typeof UpdateEmployeeSchema>;
@@ -52,7 +60,7 @@ export const SalarySummarySchema = z.object({
   medianSalary: z.number(),
   minSalary: z.number(),
   maxSalary: z.number(),
-  totalPayroll: z.number(),
+  totalPayroll: z.number()
 });
 export type SalarySummary = z.infer<typeof SalarySummarySchema>;
 
@@ -62,7 +70,7 @@ export const CountryInsightSchema = z.object({
   avgSalary: z.number(),
   minSalary: z.number(),
   maxSalary: z.number(),
-  totalPayroll: z.number(),
+  totalPayroll: z.number()
 });
 export type CountryInsight = z.infer<typeof CountryInsightSchema>;
 
@@ -72,7 +80,7 @@ export const DepartmentInsightSchema = z.object({
   avgSalary: z.number(),
   minSalary: z.number(),
   maxSalary: z.number(),
-  totalPayroll: z.number(),
+  totalPayroll: z.number()
 });
 export type DepartmentInsight = z.infer<typeof DepartmentInsightSchema>;
 
@@ -82,13 +90,13 @@ export const JobTitleInsightSchema = z.object({
   employeeCount: z.number(),
   avgSalary: z.number(),
   minSalary: z.number(),
-  maxSalary: z.number(),
+  maxSalary: z.number()
 });
 export type JobTitleInsight = z.infer<typeof JobTitleInsightSchema>;
 
 export const SalaryBandSchema = z.object({
   band: z.string(),
-  count: z.number(),
+  count: z.number()
 });
 export type SalaryBand = z.infer<typeof SalaryBandSchema>;
 
