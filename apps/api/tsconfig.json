@@ -6,14 +6,14 @@
     "outDir": "dist",
 
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./*"]
     },
 
     "types": ["node"]
   },
 
-  "include": ["src/**/*", "prisma/**/*.ts"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts"],
+  "include": ["src/**/*", "prisma/**/*.ts", "tests/**/*", "vitest.config.ts"],
+  "exclude": ["node_modules", "dist"],
   "tsc-alias": {
     "resolveFullPaths": true
   }
