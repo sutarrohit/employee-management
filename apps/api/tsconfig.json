@@ -1,0 +1,20 @@
+{
+  "extends": "@employee-management/typescript-config/base.json",
+
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "dist",
+
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+
+    "types": ["node"]
+  },
+
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts"],
+  "tsc-alias": {
+    "resolveFullPaths": true
+  }
+}
