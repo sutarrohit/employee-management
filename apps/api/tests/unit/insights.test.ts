@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  getGlobalSummary,
   getSalaryByCountry,
   getSalaryByDepartment,
   getSalaryDistribution,
@@ -9,12 +10,16 @@ import {
 
 const groupByMock = vi.hoisted(() => vi.fn());
 const findManyMock = vi.hoisted(() => vi.fn());
+const aggregateMock = vi.hoisted(() => vi.fn());
+const countMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@/src/lib/prisma.js", () => ({
   prisma: {
     employee: {
       groupBy: groupByMock,
       findMany: findManyMock,
+      aggregate: aggregateMock,
+      count: countMock,
     },
   },
 }));
@@ -392,5 +397,87 @@ describe("getTopEarners service", () => {
     });
     expect(result).toHaveLength(2);
     expect(result).toEqual(employees);
+  });
+});
+
+describe("getGlobalSummary service", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("returns global salary summary with aggregates and median", async () => {
+    aggregateMock.mockResolvedValue({
+      _avg: { salary: 95000 },
+      _min: { salary: 50000 },
+      _max: { salary: 150000 },
+      _sum: { salary: 380000 },
+    });
+    findManyMock.mockResolvedValue([
+      { salary: 50000 },
+      { salary: 80000 },
+      { salary: 100000 },
+      { salary: 150000 },
+    ]);
+    countMock.mockResolvedValue(4);
+
+    const result = await getGlobalSummary();
+
+    expect(aggregateMock).toHaveBeenCalledWith({
+      _avg: { salary: true },
+      _min: { salary: true },
+      _max: { salary: true },
+      _sum: { salary: true },
+    });
+    expect(findManyMock).toHaveBeenCalledWith({ select: { salary: true } });
+    expect(countMock).toHaveBeenCalledWith();
+    expect(result).toEqual({
+      totalEmployees: 4,
+      averageSalary: 95000,
+      medianSalary: 90000,
+      minSalary: 50000,
+      maxSalary: 150000,
+      totalPayroll: 380000,
+    });
+  });
+
+  it("falls back to zero when aggregate values are null", async () => {
+    aggregateMock.mockResolvedValue({
+      _avg: { salary: null },
+      _min: { salary: null },
+      _max: { salary: null },
+      _sum: { salary: null },
+    });
+    findManyMock.mockResolvedValue([]);
+    countMock.mockResolvedValue(0);
+
+    const result = await getGlobalSummary();
+
+    expect(result).toEqual({
+      totalEmployees: 0,
+      averageSalary: 0,
+      medianSalary: 0,
+      minSalary: 0,
+      maxSalary: 0,
+      totalPayroll: 0,
+    });
+  });
+
+  it("calculates median correctly for odd number of employees", async () => {
+    aggregateMock.mockResolvedValue({
+      _avg: { salary: 90000 },
+      _min: { salary: 50000 },
+      _max: { salary: 150000 },
+      _sum: { salary: 270000 },
+    });
+    findManyMock.mockResolvedValue([
+      { salary: 50000 },
+      { salary: 100000 },
+      { salary: 150000 },
+    ]);
+    countMock.mockResolvedValue(3);
+
+    const result = await getGlobalSummary();
+
+    expect(result.medianSalary).toBe(100000);
   });
 });
