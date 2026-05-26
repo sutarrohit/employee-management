@@ -58,6 +58,24 @@ export const updateEmployee = createRoute({
   }
 });
 
+export const deleteEmployee = createRoute({
+  tags: ["Employee"],
+  method: "delete",
+  path: "/employee/{id}",
+  request: {
+    params: z.object({
+      id: z.string()
+    })
+  },
+  responses: {
+    [HttpStatusCodes.NO_CONTENT]: {
+      description: "Employee deleted"
+    },
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(EmployeeSchema.nullable(), "Not found")
+  }
+});
+
 export type createEmployee = typeof createEmployee;
 export type getEmployeeById = typeof getEmployeeById;
 export type updateEmployee = typeof updateEmployee;
+export type deleteEmployee = typeof deleteEmployee;

@@ -1,9 +1,10 @@
 import { AppRouteHandler } from "../../lib/types.js";
 
 import * as HttpStatusCodes from "stoker/http-status-codes";
-import { createEmployee, getEmployeeById, updateEmployee } from "@/src/services/employeeService.js";
+import { createEmployee, deleteEmployee, getEmployeeById, updateEmployee } from "@/src/services/employeeService.js";
 import {
   createEmployee as createEmployeeRoute,
+  deleteEmployee as deleteEmployeeRoute,
   getEmployeeById as getEmployeeByIdRoute,
   updateEmployee as updateEmployeeRoute
 } from "./employee.route.js";
@@ -25,4 +26,10 @@ export const updateEmployeeHandler: AppRouteHandler<updateEmployeeRoute> = async
   const data = c.req.valid("json");
   const employee = await updateEmployee(id, data);
   return c.json(employee, HttpStatusCodes.OK);
+};
+
+export const deleteEmployeeHandler: AppRouteHandler<deleteEmployeeRoute> = async (c) => {
+  const { id } = c.req.valid("param");
+  await deleteEmployee(id);
+  return c.body(null, HttpStatusCodes.NO_CONTENT);
 };
