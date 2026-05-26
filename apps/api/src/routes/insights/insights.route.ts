@@ -8,6 +8,7 @@ import {
   EmployeeSchema,
   JobTitleInsightSchema,
   SalaryBandSchema,
+  SalarySummarySchema,
 } from "../../types/types.js";
 
 export const getSalaryByCountry = createRoute({
@@ -80,8 +81,21 @@ export const getTopEarners = createRoute({
   },
 });
 
+export const getGlobalSummary = createRoute({
+  tags: ["Insights"],
+  method: "get",
+  path: "/insights/global-summary",
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(
+      SalarySummarySchema,
+      "Get global salary summary",
+    ),
+  },
+});
+
 export type getSalaryByJobTitle = typeof getSalaryByJobTitle;
 export type getSalaryByCountry = typeof getSalaryByCountry;
 export type getSalaryByDepartment = typeof getSalaryByDepartment;
 export type getSalaryDistribution = typeof getSalaryDistribution;
 export type getTopEarners = typeof getTopEarners;
+export type getGlobalSummary = typeof getGlobalSummary;

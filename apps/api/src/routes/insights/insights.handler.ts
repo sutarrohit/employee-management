@@ -1,6 +1,7 @@
 import { AppRouteHandler } from "../../lib/types.js";
 import * as HttpStatusCodes from "stoker/http-status-codes";
 import {
+  getGlobalSummary,
   getSalaryByCountry,
   getSalaryByDepartment,
   getSalaryDistribution,
@@ -8,6 +9,7 @@ import {
   getTopEarners,
 } from "@/src/services/insights.js";
 import {
+  getGlobalSummary as getGlobalSummaryRoute,
   getSalaryByCountry as getSalaryByCountryRoute,
   getSalaryByDepartment as getSalaryByDepartmentRoute,
   getSalaryDistribution as getSalaryDistributionRoute,
@@ -42,6 +44,13 @@ export const getTopEarnersHandler: AppRouteHandler<getTopEarnersRoute> = async (
   const { limit } = c.req.valid("query");
   const employees = await getTopEarners(limit);
   return c.json(employees, HttpStatusCodes.OK);
+};
+
+export const getGlobalSummaryHandler: AppRouteHandler<
+  getGlobalSummaryRoute
+> = async (c) => {
+  const summary = await getGlobalSummary();
+  return c.json(summary, HttpStatusCodes.OK);
 };
 
 export const getSalaryByJobTitleHandler: AppRouteHandler<
