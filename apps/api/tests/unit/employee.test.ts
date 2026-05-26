@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/src/lib/api-error.js";
-import { createEmployee, deleteEmployee, getEmployeeById, updateEmployee } from "@/src/services/employeeService.js";
+import { createEmployee, deleteEmployee, getEmployeeById, getEmployees, updateEmployee } from "@/src/services/employeeService.js";
 import { NOT_FOUND } from "stoker/http-status-codes";
 import { NOT_FOUND as NOT_FOUND_PHRASE } from "stoker/http-status-phrases";
 
@@ -8,6 +8,8 @@ const createMock = vi.hoisted(() => vi.fn());
 const findUniqueMock = vi.hoisted(() => vi.fn());
 const updateMock = vi.hoisted(() => vi.fn());
 const deleteMock = vi.hoisted(() => vi.fn());
+const findManyMock = vi.hoisted(() => vi.fn());
+const countMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@/src/lib/prisma.js", () => ({
   prisma: {
@@ -15,7 +17,9 @@ vi.mock("@/src/lib/prisma.js", () => ({
       create: createMock,
       findUnique: findUniqueMock,
       update: updateMock,
-      delete: deleteMock
+      delete: deleteMock,
+      findMany: findManyMock,
+      count: countMock
     }
   }
 }));
@@ -194,5 +198,117 @@ describe("deleteEmployee service", () => {
       new ApiError(NOT_FOUND, NOT_FOUND_PHRASE, "Employee not found")
     );
     expect(deleteMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("getEmployees service", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("returns employees with default pagination and sorting", async () => {
+    const employees = [
+      {
+        id: "abc-123",
+        ...validPayload,
+        currency: "USD",
+        hireDate: new Date("2024-01-01T00:00:00.000Z"),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    ];
+
+    findManyMock.mockResolvedValue(employees);
+    countMock.mockResolvedValue(1);
+
+    const result = await getEmployees({});
+
+    expect(findManyMock).toHaveBeenCalledWith({
+      where: {},
+      orderBy: { fullName: "asc" },
+      skip: 0,
+      take: 20
+    });
+    expect(countMock).toHaveBeenCalledWith({ where: {} });
+    expect(result).toEqual({
+      data: employees,
+      pagination: {
+        page: 1,
+        pageSize: 20,
+        total: 1,
+        totalPages: 1
+      }
+    });
+  });
+
+  it("builds filters, applies custom pagination, and calculates total pages", async () => {
+    const employees = [
+      {
+        id: "emp-1",
+        ...validPayload,
+        fullName: "Jane Doe",
+        jobTitle: "Designer",
+        department: "Product",
+        country: "IN",
+        currency: "USD",
+        hireDate: new Date("2024-02-01T00:00:00.000Z"),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    ];
+
+    findManyMock.mockResolvedValue(employees);
+    countMock.mockResolvedValue(5);
+
+    const result = await getEmployees({
+      page: 2,
+      pageSize: 2,
+      search: "  Jane  ",
+      country: "IN",
+      department: "Product",
+      jobTitle: "Designer",
+      employmentType: "Full-time",
+      sortBy: "salary",
+      sortOrder: "desc"
+    });
+
+    expect(findManyMock).toHaveBeenCalledWith({
+      where: {
+        OR: [
+          { fullName: { contains: "Jane" } },
+          { email: { contains: "Jane" } },
+          { jobTitle: { contains: "Jane" } }
+        ],
+        country: "IN",
+        department: "Product",
+        jobTitle: "Designer",
+        employmentType: "Full-time"
+      },
+      orderBy: { salary: "desc" },
+      skip: 2,
+      take: 2
+    });
+    expect(countMock).toHaveBeenCalledWith({
+      where: {
+        OR: [
+          { fullName: { contains: "Jane" } },
+          { email: { contains: "Jane" } },
+          { jobTitle: { contains: "Jane" } }
+        ],
+        country: "IN",
+        department: "Product",
+        jobTitle: "Designer",
+        employmentType: "Full-time"
+      }
+    });
+    expect(result).toEqual({
+      data: employees,
+      pagination: {
+        page: 2,
+        pageSize: 2,
+        total: 5,
+        totalPages: 3
+      }
+    });
   });
 });
