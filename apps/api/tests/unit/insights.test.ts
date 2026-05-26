@@ -2,15 +2,18 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   getSalaryByCountry,
   getSalaryByDepartment,
+  getSalaryDistribution,
   getSalaryByJobTitle,
 } from "@/src/services/insights.js";
 
 const groupByMock = vi.hoisted(() => vi.fn());
+const findManyMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@/src/lib/prisma.js", () => ({
   prisma: {
     employee: {
       groupBy: groupByMock,
+      findMany: findManyMock,
     },
   },
 }));
@@ -269,6 +272,70 @@ describe("getSalaryByDepartment service", () => {
         maxSalary: 0,
         totalPayroll: 0,
       },
+    ]);
+  });
+});
+
+describe("getSalaryDistribution service", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("distributes salaries into predefined bands", async () => {
+    findManyMock.mockResolvedValue([
+      { salary: 10000 },
+      { salary: 25000 },
+      { salary: 35000 },
+      { salary: 55000 },
+      { salary: 75000 },
+      { salary: 110000 },
+      { salary: 150000 },
+      { salary: 200000 },
+    ]);
+
+    const result = await getSalaryDistribution();
+
+    expect(findManyMock).toHaveBeenCalledWith({ select: { salary: true } });
+    expect(result).toEqual([
+      { band: "0-30k", count: 2 },
+      { band: "30k-60k", count: 2 },
+      { band: "60k-90k", count: 1 },
+      { band: "90k-120k", count: 1 },
+      { band: "120k+", count: 2 },
+    ]);
+  });
+
+  it("returns zero counts for all bands when no employees exist", async () => {
+    findManyMock.mockResolvedValue([]);
+
+    const result = await getSalaryDistribution();
+
+    expect(result).toEqual([
+      { band: "0-30k", count: 0 },
+      { band: "30k-60k", count: 0 },
+      { band: "60k-90k", count: 0 },
+      { band: "90k-120k", count: 0 },
+      { band: "120k+", count: 0 },
+    ]);
+  });
+
+  it("handles boundary salaries at band edges", async () => {
+    findManyMock.mockResolvedValue([
+      { salary: 0 },
+      { salary: 30000 },
+      { salary: 60000 },
+      { salary: 90000 },
+      { salary: 120000 },
+    ]);
+
+    const result = await getSalaryDistribution();
+
+    expect(result).toEqual([
+      { band: "0-30k", count: 1 },
+      { band: "30k-60k", count: 1 },
+      { band: "60k-90k", count: 1 },
+      { band: "90k-120k", count: 1 },
+      { band: "120k+", count: 1 },
     ]);
   });
 });
