@@ -99,3 +99,38 @@ export async function getTopEarners(limit: number) {
     take: limit
   });
 }
+
+function computeMedian(values: number[]) {
+  if (values.length === 0) {
+    return 0;
+  }
+
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+
+  return sorted.length % 2 === 0
+    ? (sorted[middle - 1]! + sorted[middle]!) / 2
+    : sorted[middle]!;
+}
+
+export async function getGlobalSummary(): Promise<SalarySummary> {
+  const [aggregate, salaries, totalEmployees] = await Promise.all([
+    prisma.employee.aggregate({
+      _avg: { salary: true },
+      _min: { salary: true },
+      _max: { salary: true },
+      _sum: { salary: true }
+    }),
+    prisma.employee.findMany({ select: { salary: true } }),
+    prisma.employee.count()
+  ]);
+
+  return {
+    totalEmployees,
+    averageSalary: Number(aggregate._avg.salary ?? 0),
+    medianSalary: computeMedian(salaries.map((item) => item.salary)),
+    minSalary: Number(aggregate._min.salary ?? 0),
+    maxSalary: Number(aggregate._max.salary ?? 0),
+    totalPayroll: Number(aggregate._sum.salary ?? 0)
+  };
+}
