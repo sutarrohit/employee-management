@@ -4,6 +4,7 @@ import {
   getSalaryByDepartment,
   getSalaryDistribution,
   getSalaryByJobTitle,
+  getTopEarners,
 } from "@/src/services/insights.js";
 
 const groupByMock = vi.hoisted(() => vi.fn());
@@ -337,5 +338,59 @@ describe("getSalaryDistribution service", () => {
       { band: "90k-120k", count: 1 },
       { band: "120k+", count: 1 },
     ]);
+  });
+});
+
+describe("getTopEarners service", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("returns top earners ordered by salary descending with the given limit", async () => {
+    const employees = [
+      { id: "1", fullName: "Alice", salary: 200000 },
+      { id: "2", fullName: "Bob", salary: 150000 },
+      { id: "3", fullName: "Charlie", salary: 120000 },
+    ];
+
+    findManyMock.mockResolvedValue(employees);
+
+    const result = await getTopEarners(3);
+
+    expect(findManyMock).toHaveBeenCalledWith({
+      orderBy: { salary: "desc" },
+      take: 3,
+    });
+    expect(result).toEqual(employees);
+  });
+
+  it("returns empty array when limit is zero", async () => {
+    findManyMock.mockResolvedValue([]);
+
+    const result = await getTopEarners(0);
+
+    expect(findManyMock).toHaveBeenCalledWith({
+      orderBy: { salary: "desc" },
+      take: 0,
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("returns all available employees when limit exceeds total count", async () => {
+    const employees = [
+      { id: "1", fullName: "Alice", salary: 200000 },
+      { id: "2", fullName: "Bob", salary: 150000 },
+    ];
+
+    findManyMock.mockResolvedValue(employees);
+
+    const result = await getTopEarners(10);
+
+    expect(findManyMock).toHaveBeenCalledWith({
+      orderBy: { salary: "desc" },
+      take: 10,
+    });
+    expect(result).toHaveLength(2);
+    expect(result).toEqual(employees);
   });
 });
