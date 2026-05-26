@@ -5,6 +5,7 @@ import { jsonContent } from "stoker/openapi/helpers";
 import {
   CountryInsightSchema,
   DepartmentInsightSchema,
+  EmployeeSchema,
   JobTitleInsightSchema,
   SalaryBandSchema,
 } from "../../types/types.js";
@@ -62,7 +63,25 @@ export const getSalaryDistribution = createRoute({
   },
 });
 
+export const getTopEarners = createRoute({
+  tags: ["Insights"],
+  method: "get",
+  path: "/insights/top-earners",
+  request: {
+    query: z.object({
+      limit: z.coerce.number().int().positive(),
+    }),
+  },
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(
+      z.array(EmployeeSchema),
+      "Get top earners by salary",
+    ),
+  },
+});
+
 export type getSalaryByJobTitle = typeof getSalaryByJobTitle;
 export type getSalaryByCountry = typeof getSalaryByCountry;
 export type getSalaryByDepartment = typeof getSalaryByDepartment;
 export type getSalaryDistribution = typeof getSalaryDistribution;
+export type getTopEarners = typeof getTopEarners;

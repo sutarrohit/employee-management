@@ -5,12 +5,14 @@ import {
   getSalaryByDepartment,
   getSalaryDistribution,
   getSalaryByJobTitle,
+  getTopEarners,
 } from "@/src/services/insights.js";
 import {
   getSalaryByCountry as getSalaryByCountryRoute,
   getSalaryByDepartment as getSalaryByDepartmentRoute,
   getSalaryDistribution as getSalaryDistributionRoute,
   getSalaryByJobTitle as getSalaryByJobTitleRoute,
+  getTopEarners as getTopEarnersRoute,
 } from "./insights.route.js";
 
 export const getSalaryByCountryHandler: AppRouteHandler<
@@ -32,6 +34,14 @@ export const getSalaryDistributionHandler: AppRouteHandler<
 > = async (c) => {
   const insights = await getSalaryDistribution();
   return c.json(insights, HttpStatusCodes.OK);
+};
+
+export const getTopEarnersHandler: AppRouteHandler<getTopEarnersRoute> = async (
+  c,
+) => {
+  const { limit } = c.req.valid("query");
+  const employees = await getTopEarners(limit);
+  return c.json(employees, HttpStatusCodes.OK);
 };
 
 export const getSalaryByJobTitleHandler: AppRouteHandler<
