@@ -1,19 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/src/lib/api-error.js";
-import { createEmployee, getEmployeeById, updateEmployee } from "@/src/services/employeeService.js";
+import { createEmployee, deleteEmployee, getEmployeeById, updateEmployee } from "@/src/services/employeeService.js";
 import { NOT_FOUND } from "stoker/http-status-codes";
 import { NOT_FOUND as NOT_FOUND_PHRASE } from "stoker/http-status-phrases";
 
 const createMock = vi.hoisted(() => vi.fn());
 const findUniqueMock = vi.hoisted(() => vi.fn());
 const updateMock = vi.hoisted(() => vi.fn());
+const deleteMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@/src/lib/prisma.js", () => ({
   prisma: {
     employee: {
       create: createMock,
       findUnique: findUniqueMock,
-      update: updateMock
+      update: updateMock,
+      delete: deleteMock
     }
   }
 }));
@@ -154,5 +156,43 @@ describe("updateEmployee service", () => {
       new ApiError(NOT_FOUND, NOT_FOUND_PHRASE, "Employee not found")
     );
     expect(updateMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("deleteEmployee service", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("deletes an existing employee by id", async () => {
+    const existingEmployee = {
+      id: "abc-123",
+      ...validPayload,
+      currency: "USD",
+      hireDate: new Date("2024-01-01T00:00:00.000Z"),
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    findUniqueMock.mockResolvedValue(existingEmployee);
+    deleteMock.mockResolvedValue(existingEmployee);
+
+    await expect(deleteEmployee("abc-123")).resolves.toBeUndefined();
+
+    expect(findUniqueMock).toHaveBeenCalledWith({
+      where: { id: "abc-123" }
+    });
+    expect(deleteMock).toHaveBeenCalledWith({
+      where: { id: "abc-123" }
+    });
+  });
+
+  it("throws an ApiError and does not call delete when the employee does not exist", async () => {
+    findUniqueMock.mockResolvedValue(null);
+
+    await expect(deleteEmployee("missing-id")).rejects.toEqual(
+      new ApiError(NOT_FOUND, NOT_FOUND_PHRASE, "Employee not found")
+    );
+    expect(deleteMock).not.toHaveBeenCalled();
   });
 });
