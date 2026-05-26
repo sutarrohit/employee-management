@@ -70,8 +70,6 @@ export async function getSalaryByDepartment(): Promise<DepartmentInsight[]> {
   }));
 }
 
-
-
 export async function getSalaryDistribution(): Promise<SalaryBand[]> {
   const salaries = await prisma.employee.findMany({
     select: { salary: true }
@@ -93,4 +91,11 @@ export async function getSalaryDistribution(): Promise<SalaryBand[]> {
   }
 
   return bands.map(({ band, count }) => ({ band, count }));
+}
+
+export async function getTopEarners(limit: number) {
+  return prisma.employee.findMany({
+    orderBy: { salary: "desc" },
+    take: limit
+  });
 }
