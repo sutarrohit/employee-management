@@ -52,7 +52,7 @@ import {
   Money01Icon,
   Calendar03Icon,
 } from "@hugeicons/core-free-icons";
-import type { UpdateEmployee } from "@employee-management/api";
+import type { UpdateEmployee } from "@/types/api-types";
 import {
   formSchema,
   type FormValues,

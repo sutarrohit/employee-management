@@ -6,8 +6,8 @@ import type {
   CountryInsight,
   DepartmentInsight,
   SalaryBand,
-  SalarySummary
-} from "@employee-management/api";
+  SalarySummary,
+} from "@/types/api-types";
 
 export async function getSalaryByCountry(): Promise<CountryInsight[]> {
   return request("/insights/salary-by-country");
@@ -25,7 +25,9 @@ export async function getSalaryDistribution(): Promise<SalaryBand[]> {
   return request("/insights/salary-distribution");
 }
 
-export async function getTopEarners(limit?: number): Promise<EmployeeResponse[]> {
+export async function getTopEarners(
+  limit?: number,
+): Promise<EmployeeResponse[]> {
   const qs = limit ? `?limit=${limit}` : "";
   return request(`/insights/top-earners${qs}`);
 }

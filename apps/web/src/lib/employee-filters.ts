@@ -1,4 +1,4 @@
-import type { EmployeeFilters, SortBy, SortOrder } from "@employee-management/api";
+import type { EmployeeFilters, SortBy, SortOrder } from "@/types/api-types";
 
 type SearchParamsRecord = Record<string, string | string[] | undefined>;
 
@@ -15,7 +15,9 @@ function positiveNumber(value: string | undefined) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
 }
 
-export function parseEmployeeFilters(searchParams?: SearchParamsRecord): EmployeeFilters {
+export function parseEmployeeFilters(
+  searchParams?: SearchParamsRecord,
+): EmployeeFilters {
   const page = positiveNumber(firstValue(searchParams?.page));
   const pageSize = positiveNumber(firstValue(searchParams?.pageSize));
   const sortBy = firstValue(searchParams?.sortBy);
@@ -29,11 +31,19 @@ export function parseEmployeeFilters(searchParams?: SearchParamsRecord): Employe
     department: firstValue(searchParams?.department) || undefined,
     jobTitle: firstValue(searchParams?.jobTitle) || undefined,
     employmentType: firstValue(searchParams?.employmentType) || undefined,
-    sortBy: sortBy && sortableFields.has(sortBy as SortBy) ? (sortBy as SortBy) : undefined,
-    sortOrder: sortOrder && sortOrders.has(sortOrder as SortOrder) ? (sortOrder as SortOrder) : undefined,
+    sortBy:
+      sortBy && sortableFields.has(sortBy as SortBy)
+        ? (sortBy as SortBy)
+        : undefined,
+    sortOrder:
+      sortOrder && sortOrders.has(sortOrder as SortOrder)
+        ? (sortOrder as SortOrder)
+        : undefined,
   };
 }
 
-export function filtersFromURLSearchParams(searchParams: URLSearchParams): EmployeeFilters {
+export function filtersFromURLSearchParams(
+  searchParams: URLSearchParams,
+): EmployeeFilters {
   return parseEmployeeFilters(Object.fromEntries(searchParams.entries()));
 }
