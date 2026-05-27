@@ -9,7 +9,7 @@ import {
   useReactTable,
   type ColumnDef,
   type OnChangeFn,
-  type SortingState
+  type SortingState,
 } from "@tanstack/react-table";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
@@ -20,9 +20,13 @@ import {
   ArrowRight01Icon,
   ArrowRightDoubleIcon,
   Delete01Icon,
-  LeftToRightListBulletIcon
+  LeftToRightListBulletIcon,
 } from "@hugeicons/core-free-icons";
-import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import {
@@ -34,30 +38,53 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuTrigger
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { deleteEmployeeMutationOptions, employeeListOptions } from "@/lib/apis/employee/employee-queries";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  deleteEmployeeMutationOptions,
+  employeeListOptions,
+} from "@/lib/apis/employee/employee-queries";
 import { filtersFromURLSearchParams } from "@/lib/employee-filters";
-import type { EmployeeResponse } from "@employee-management/api";
+import type { EmployeeResponse } from "@/types/api-types";
 
 function formatCurrency(value: number, currency = "USD") {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency,
     minimumFractionDigits: 0,
-    maximumFractionDigits: 0
+    maximumFractionDigits: 0,
   }).format(value);
 }
 
@@ -65,13 +92,13 @@ function formatDate(value: string | Date) {
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
-    year: "numeric"
+    year: "numeric",
   }).format(new Date(value));
 }
 
 function SortHeader({
   label,
-  column
+  column,
 }: {
   label: string;
   column: {
@@ -83,9 +110,9 @@ function SortHeader({
 
   return (
     <Button
-      type='button'
-      variant='ghost'
-      className='-ml-2 h-8 px-2'
+      type="button"
+      variant="ghost"
+      className="-ml-2 h-8 px-2"
       onClick={() => column.toggleSorting(sorted === "asc")}
     >
       {label}
@@ -109,18 +136,18 @@ function ActionsCell({ employee }: { employee: EmployeeResponse }) {
     },
     onError: (error) => {
       toast.error(error.message ?? "Failed to delete employee");
-    }
+    },
   });
 
   return (
-    <div className='text-right flex items-center justify-end gap-2'>
-      <Button asChild variant='outline' className='mr-2'>
+    <div className="text-right flex items-center justify-end gap-2">
+      <Button asChild variant="outline" className="mr-2">
         <Link href={`/employees/${employee.id}`}>View/Update</Link>
       </Button>
 
       <AlertDialog open={open} onOpenChange={setOpen}>
         <AlertDialogTrigger asChild>
-          <Button variant='destructive' size='icon'>
+          <Button variant="destructive" size="icon">
             <HugeiconsIcon icon={Delete01Icon} strokeWidth={2} />
           </Button>
         </AlertDialogTrigger>
@@ -129,17 +156,19 @@ function ActionsCell({ employee }: { employee: EmployeeResponse }) {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Employee</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete <strong>{employee.fullName}</strong>? This action cannot be undone.
+              Are you sure you want to delete{" "}
+              <strong>{employee.fullName}</strong>? This action cannot be
+              undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className='flex justify-center'>
+          <AlertDialogFooter className="flex justify-center">
             <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               disabled={isPending}
               onClick={(e) => {
                 e.preventDefault();
                 mutate(employee.id, {
-                  onSuccess: () => setOpen(false)
+                  onSuccess: () => setOpen(false),
                 });
               }}
             >
@@ -157,60 +186,79 @@ function useTableColumns() {
     () => [
       {
         accessorKey: "fullName",
-        header: ({ column }) => <SortHeader label='Name' column={column} />,
+        header: ({ column }) => <SortHeader label="Name" column={column} />,
         cell: ({ row }) => (
-          <div className='min-w-44'>
-            <Link href={`/employees/${row.original.id}`} className='font-medium text-foreground hover:underline'>
+          <div className="min-w-44">
+            <Link
+              href={`/employees/${row.original.id}`}
+              className="font-medium text-foreground hover:underline"
+            >
               {row.original.fullName}
             </Link>
-            <div className='text-xs text-muted-foreground'>{row.original.email}</div>
+            <div className="text-xs text-muted-foreground">
+              {row.original.email}
+            </div>
           </div>
-        )
+        ),
       },
       {
         accessorKey: "jobTitle",
         header: "Job title",
-        cell: ({ row }) => <span className='text-muted-foreground'>{row.original.jobTitle}</span>,
-        enableSorting: false
+        cell: ({ row }) => (
+          <span className="text-muted-foreground">{row.original.jobTitle}</span>
+        ),
+        enableSorting: false,
       },
       {
         accessorKey: "department",
         header: "Department",
-        cell: ({ row }) => <Badge variant='outline'>{row.original.department}</Badge>,
-        enableSorting: false
+        cell: ({ row }) => (
+          <Badge variant="outline">{row.original.department}</Badge>
+        ),
+        enableSorting: false,
       },
       {
         accessorKey: "country",
         header: "Country",
-        enableSorting: false
+        enableSorting: false,
       },
       {
         accessorKey: "salary",
-        header: ({ column }) => <SortHeader label='Salary' column={column} />,
+        header: ({ column }) => <SortHeader label="Salary" column={column} />,
         cell: ({ row }) => (
-          <span className='font-mono tabular-nums'>{formatCurrency(row.original.salary, row.original.currency)}</span>
-        )
+          <span className="font-mono tabular-nums">
+            {formatCurrency(row.original.salary, row.original.currency)}
+          </span>
+        ),
       },
       {
         accessorKey: "employmentType",
         header: "Type",
-        cell: ({ row }) => <Badge variant='secondary'>{row.original.employmentType}</Badge>,
-        enableSorting: false
+        cell: ({ row }) => (
+          <Badge variant="secondary">{row.original.employmentType}</Badge>
+        ),
+        enableSorting: false,
       },
       {
         accessorKey: "hireDate",
-        header: ({ column }) => <SortHeader label='Hire date' column={column} />,
-        cell: ({ row }) => <span className='text-muted-foreground'>{formatDate(row.original.hireDate)}</span>
+        header: ({ column }) => (
+          <SortHeader label="Hire date" column={column} />
+        ),
+        cell: ({ row }) => (
+          <span className="text-muted-foreground">
+            {formatDate(row.original.hireDate)}
+          </span>
+        ),
       },
       {
         id: "actions",
-        header: () => <div className='text-right'>Actions</div>,
+        header: () => <div className="text-right">Actions</div>,
         cell: ({ row }) => <ActionsCell employee={row.original} />,
         enableHiding: false,
-        enableSorting: false
-      }
+        enableSorting: false,
+      },
     ],
-    []
+    [],
   );
   return columns;
 }
@@ -219,13 +267,19 @@ export function EmployeeTable() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const filters = React.useMemo(() => filtersFromURLSearchParams(searchParams), [searchParams]);
+  const filters = React.useMemo(
+    () => filtersFromURLSearchParams(searchParams),
+    [searchParams],
+  );
   const { data: employees } = useSuspenseQuery(employeeListOptions(filters));
   const [columnVisibility, setColumnVisibility] = React.useState({});
   const columns = useTableColumns();
   const sorting = React.useMemo<SortingState>(
-    () => (filters.sortBy ? [{ id: filters.sortBy, desc: filters.sortOrder === "desc" }] : []),
-    [filters.sortBy, filters.sortOrder]
+    () =>
+      filters.sortBy
+        ? [{ id: filters.sortBy, desc: filters.sortOrder === "desc" }]
+        : [],
+    [filters.sortBy, filters.sortOrder],
   );
 
   function pushParams(next: URLSearchParams) {
@@ -247,7 +301,8 @@ export function EmployeeTable() {
   }
 
   const handleSortingChange: OnChangeFn<SortingState> = (updater) => {
-    const nextSorting = typeof updater === "function" ? updater(sorting) : updater;
+    const nextSorting =
+      typeof updater === "function" ? updater(sorting) : updater;
     const next = new URLSearchParams(searchParams.toString());
     const primarySort = nextSorting[0];
 
@@ -272,14 +327,14 @@ export function EmployeeTable() {
       sorting,
       pagination: {
         pageIndex: employees.pagination.page - 1,
-        pageSize: employees.pagination.pageSize
-      }
+        pageSize: employees.pagination.pageSize,
+      },
     },
     manualPagination: true,
     manualSorting: true,
     onColumnVisibilityChange: setColumnVisibility,
     onSortingChange: handleSortingChange,
-    getCoreRowModel: getCoreRowModel()
+    getCoreRowModel: getCoreRowModel(),
   });
 
   const { page, pageSize, total, totalPages } = employees.pagination;
@@ -287,41 +342,46 @@ export function EmployeeTable() {
   const lastRow = Math.min(page * pageSize, total);
 
   return (
-    <Card className='mx-4 lg:mx-6'>
-      <CardHeader className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
+    <Card className="mx-4 lg:mx-6">
+      <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <CardTitle>Employee Directory</CardTitle>
           <CardDescription>
             {total} employee{total === 1 ? "" : "s"} found
           </CardDescription>
         </div>
-        <div className='flex items-center gap-2'>
+        <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant='outline' size='sm'>
-                <HugeiconsIcon icon={LeftToRightListBulletIcon} strokeWidth={2} />
+              <Button variant="outline" size="sm">
+                <HugeiconsIcon
+                  icon={LeftToRightListBulletIcon}
+                  strokeWidth={2}
+                />
                 Columns
                 <HugeiconsIcon icon={ArrowDown01Icon} strokeWidth={2} />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align='end' className='w-40'>
+            <DropdownMenuContent align="end" className="w-40">
               {table
                 .getAllColumns()
                 .filter((column) => column.getCanHide())
                 .map((column) => (
                   <DropdownMenuCheckboxItem
                     key={column.id}
-                    className='capitalize'
+                    className="capitalize"
                     checked={column.getIsVisible()}
-                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                    onCheckedChange={(value) =>
+                      column.toggleVisibility(!!value)
+                    }
                   >
                     {column.id}
                   </DropdownMenuCheckboxItem>
                 ))}
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button asChild size='sm'>
-            <Link href='/employees/new'>
+          <Button asChild size="sm">
+            <Link href="/employees/new">
               <HugeiconsIcon icon={Add01Icon} strokeWidth={2} />
               Add employee
             </Link>
@@ -329,15 +389,20 @@ export function EmployeeTable() {
         </div>
       </CardHeader>
 
-      <CardContent className='flex flex-col gap-4'>
-        <div className='overflow-hidden rounded-lg border'>
+      <CardContent className="flex flex-col gap-4">
+        <div className="overflow-hidden rounded-lg border">
           <Table>
-            <TableHeader className='bg-muted'>
+            <TableHeader className="bg-muted">
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
                     <TableHead key={header.id} colSpan={header.colSpan}>
-                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
                     </TableHead>
                   ))}
                 </TableRow>
@@ -348,13 +413,21 @@ export function EmployeeTable() {
                 table.getRowModel().rows.map((row) => (
                   <TableRow key={row.id}>
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
                     ))}
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={columns.length} className='h-24 text-center'>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
                     No employees found.
                   </TableCell>
                 </TableRow>
@@ -363,20 +436,27 @@ export function EmployeeTable() {
           </Table>
         </div>
 
-        <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
-          <div className='text-sm text-muted-foreground'>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-sm text-muted-foreground">
             Showing {firstRow}-{lastRow} of {total}
           </div>
-          <div className='flex items-center gap-4 sm:gap-8'>
-            <div className='hidden items-center gap-2 lg:flex'>
-              <Label htmlFor='employee-rows-per-page' className='text-sm font-medium'>
+          <div className="flex items-center gap-4 sm:gap-8">
+            <div className="hidden items-center gap-2 lg:flex">
+              <Label
+                htmlFor="employee-rows-per-page"
+                className="text-sm font-medium"
+              >
                 Rows per page
               </Label>
               <Select value={String(pageSize)} onValueChange={updatePageSize}>
-                <SelectTrigger size='sm' className='w-20' id='employee-rows-per-page'>
+                <SelectTrigger
+                  size="sm"
+                  className="w-20"
+                  id="employee-rows-per-page"
+                >
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent side='top'>
+                <SelectContent side="top">
                   <SelectGroup>
                     {[10, 20, 30, 40, 50].map((size) => (
                       <SelectItem key={size} value={String(size)}>
@@ -387,47 +467,47 @@ export function EmployeeTable() {
                 </SelectContent>
               </Select>
             </div>
-            <div className='text-sm font-medium'>
+            <div className="text-sm font-medium">
               Page {page} of {totalPages}
             </div>
-            <div className='ml-auto flex items-center gap-2 sm:ml-0'>
+            <div className="ml-auto flex items-center gap-2 sm:ml-0">
               <Button
-                variant='outline'
-                className='hidden size-8 p-0 lg:flex'
+                variant="outline"
+                className="hidden size-8 p-0 lg:flex"
                 onClick={() => updatePage(1)}
                 disabled={page <= 1}
               >
-                <span className='sr-only'>Go to first page</span>
+                <span className="sr-only">Go to first page</span>
                 <HugeiconsIcon icon={ArrowLeftDoubleIcon} strokeWidth={2} />
               </Button>
               <Button
-                variant='outline'
-                className='size-8'
-                size='icon'
+                variant="outline"
+                className="size-8"
+                size="icon"
                 onClick={() => updatePage(page - 1)}
                 disabled={page <= 1}
               >
-                <span className='sr-only'>Go to previous page</span>
+                <span className="sr-only">Go to previous page</span>
                 <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} />
               </Button>
               <Button
-                variant='outline'
-                className='size-8'
-                size='icon'
+                variant="outline"
+                className="size-8"
+                size="icon"
                 onClick={() => updatePage(page + 1)}
                 disabled={page >= totalPages}
               >
-                <span className='sr-only'>Go to next page</span>
+                <span className="sr-only">Go to next page</span>
                 <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} />
               </Button>
               <Button
-                variant='outline'
-                className='hidden size-8 lg:flex'
-                size='icon'
+                variant="outline"
+                className="hidden size-8 lg:flex"
+                size="icon"
                 onClick={() => updatePage(totalPages)}
                 disabled={page >= totalPages}
               >
-                <span className='sr-only'>Go to last page</span>
+                <span className="sr-only">Go to last page</span>
                 <HugeiconsIcon icon={ArrowRightDoubleIcon} strokeWidth={2} />
               </Button>
             </div>

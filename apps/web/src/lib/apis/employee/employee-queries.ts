@@ -4,7 +4,7 @@ import type {
   CreateEmployee,
   EmployeeFilters,
   UpdateEmployee,
-} from "@employee-management/api";
+} from "@/types/api-types";
 
 export function employeeListOptions(filters?: EmployeeFilters) {
   return queryOptions({

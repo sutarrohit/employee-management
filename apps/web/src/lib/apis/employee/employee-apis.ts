@@ -4,17 +4,21 @@ import type {
   CreateEmployee,
   EmployeeResponse,
   UpdateEmployee,
-  PaginatedResult
-} from "@employee-management/api";
+  PaginatedResult,
+} from "@/types/api-types";
 
-export async function createEmployee(data: CreateEmployee): Promise<EmployeeResponse> {
+export async function createEmployee(
+  data: CreateEmployee,
+): Promise<EmployeeResponse> {
   return request("/employee", {
     method: "POST",
-    body: JSON.stringify(data)
+    body: JSON.stringify(data),
   });
 }
 
-export async function getEmployees(filters?: EmployeeFilters): Promise<PaginatedResult<EmployeeResponse>> {
+export async function getEmployees(
+  filters?: EmployeeFilters,
+): Promise<PaginatedResult<EmployeeResponse>> {
   const params = new URLSearchParams();
   if (filters) {
     Object.entries(filters).forEach(([key, value]) => {
@@ -31,10 +35,13 @@ export async function getEmployeeById(id: string): Promise<EmployeeResponse> {
   return request(`/employee/${id}`);
 }
 
-export async function updateEmployee(id: string, data: UpdateEmployee): Promise<EmployeeResponse> {
+export async function updateEmployee(
+  id: string,
+  data: UpdateEmployee,
+): Promise<EmployeeResponse> {
   return request(`/employee/${id}`, {
     method: "PATCH",
-    body: JSON.stringify(data)
+    body: JSON.stringify(data),
   });
 }
 
