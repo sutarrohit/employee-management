@@ -124,6 +124,7 @@ function ActionsCell({ employee }: { employee: EmployeeResponse }) {
             <HugeiconsIcon icon={Delete01Icon} strokeWidth={2} />
           </Button>
         </AlertDialogTrigger>
+
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Employee</AlertDialogTitle>
@@ -131,7 +132,7 @@ function ActionsCell({ employee }: { employee: EmployeeResponse }) {
               Are you sure you want to delete <strong>{employee.fullName}</strong>? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
+          <AlertDialogFooter className='flex justify-center'>
             <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               disabled={isPending}
