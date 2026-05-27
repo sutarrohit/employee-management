@@ -4,6 +4,8 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 
 import Providers from "@/providers";
+import { AppSidebar } from "@/components/sidebar/app-sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 const geistSans = Geist({
@@ -30,10 +32,22 @@ export default function RootLayout({
     <html
       lang='en'
       className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", inter.variable)}
+      suppressHydrationWarning
     >
       <body className='min-h-full flex flex-col'>
-        {" "}
-        <Providers>{children}</Providers>
+        <Providers>
+          <SidebarProvider
+            style={
+              {
+                "--sidebar-width": "calc(var(--spacing) * 72)",
+                "--header-height": "calc(var(--spacing) * 12)"
+              } as React.CSSProperties
+            }
+          >
+            <AppSidebar variant='inset' />
+            <SidebarInset>{children}</SidebarInset>
+          </SidebarProvider>
+        </Providers>
       </body>
     </html>
   );
