@@ -83,15 +83,15 @@ export default async function Page() {
               </HydrationBoundary>
             </Suspense>
 
-            <div className='grid grid-cols-5 px-4 lg:px-6 gap-4'>
-              <div className='col-span-3'>
+            <div className='flex md:flex-row flex-col px-4 lg:px-6 gap-4'>
+              <div className='w-full'>
                 <Suspense fallback={<SalaryDistributionSkeleton />}>
                   <HydrationBoundary state={dehydrate(queryClient)}>
                     <SalaryDistribution />
                   </HydrationBoundary>
                 </Suspense>
               </div>
-              <div className='col-span-2'>
+              <div className='w-full'>
                 <Suspense fallback={<SalaryDistributionSkeleton />}>
                   <HydrationBoundary state={dehydrate(queryClient)}>
                     <TopEarners />
@@ -100,17 +100,16 @@ export default async function Page() {
               </div>
             </div>
 
-            <div className='grid grid-cols-5 px-4 lg:px-6 gap-4'>
-              <div className='col-span-2'>
-                <div className='col-span-1'>
-                  <Suspense fallback={<SalaryDistributionSkeleton />}>
-                    <HydrationBoundary state={dehydrate(queryClient)}>
-                      <CountryInsights />
-                    </HydrationBoundary>
-                  </Suspense>
-                </div>
+            <div className='flex md:flex-row flex-col px-4 lg:px-6 gap-4'>
+              <div className='w-full'>
+                <Suspense fallback={<SalaryDistributionSkeleton />}>
+                  <HydrationBoundary state={dehydrate(queryClient)}>
+                    <CountryInsights />
+                  </HydrationBoundary>
+                </Suspense>
               </div>
-              <div className='col-span-3'>
+
+              <div className='w-full'>
                 <Suspense fallback={<SalaryDistributionSkeleton />}>
                   <HydrationBoundary state={dehydrate(queryClient)}>
                     <PayrollByDepartment />

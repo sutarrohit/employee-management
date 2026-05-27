@@ -28,7 +28,7 @@ export function TopEarners() {
   const { data } = useSuspenseQuery(topEarnersOptions(8));
 
   return (
-    <Card className='@container/card h-full'>
+    <Card className='@container/card size-full'>
       <CardHeader>
         <CardTitle>Top Earners</CardTitle>
         <CardDescription>Highest paid employees</CardDescription>

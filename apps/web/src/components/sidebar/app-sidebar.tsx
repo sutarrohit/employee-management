@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/sidebar";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { DashboardSquare01Icon, UserGroupIcon, CommandIcon } from "@hugeicons/core-free-icons";
+import Link from "next/link";
 
 const data = {
   user: {
@@ -42,10 +43,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild className='data-[slot=sidebar-menu-button]:p-1.5!'>
-              <a href='#'>
+              <Link href='/'>
                 <HugeiconsIcon icon={CommandIcon} strokeWidth={2} className='size-5!' />
-                <span className='text-base font-semibold'>HR Operation.</span>
-              </a>
+                <span className='text-base font-semibold'>HR Operation</span>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

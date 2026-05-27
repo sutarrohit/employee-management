@@ -19,10 +19,23 @@ import {
   ArrowLeftDoubleIcon,
   ArrowRight01Icon,
   ArrowRightDoubleIcon,
+  Delete01Icon,
   LeftToRightListBulletIcon
 } from "@hugeicons/core-free-icons";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,7 +48,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { employeeListOptions } from "@/lib/apis/employee/employee-queries";
+import { deleteEmployeeMutationOptions, employeeListOptions } from "@/lib/apis/employee/employee-queries";
 import { filtersFromURLSearchParams } from "@/lib/employee-filters";
 import type { EmployeeResponse } from "@employee-management/api";
 
@@ -61,7 +74,10 @@ function SortHeader({
   column
 }: {
   label: string;
-  column: { getIsSorted: () => false | "asc" | "desc"; toggleSorting: (desc?: boolean) => void };
+  column: {
+    getIsSorted: () => false | "asc" | "desc";
+    toggleSorting: (desc?: boolean) => void;
+  };
 }) {
   const sorted = column.getIsSorted();
 
@@ -82,68 +98,121 @@ function SortHeader({
   );
 }
 
-const columns: ColumnDef<EmployeeResponse>[] = [
-  {
-    accessorKey: "fullName",
-    header: ({ column }) => <SortHeader label='Name' column={column} />,
-    cell: ({ row }) => (
-      <div className='min-w-44'>
-        <Link href={`/employees/${row.original.id}`} className='font-medium text-foreground hover:underline'>
-          {row.original.fullName}
-        </Link>
-        <div className='text-xs text-muted-foreground'>{row.original.email}</div>
-      </div>
-    )
-  },
-  {
-    accessorKey: "jobTitle",
-    header: "Job title",
-    cell: ({ row }) => <span className='text-muted-foreground'>{row.original.jobTitle}</span>,
-    enableSorting: false
-  },
-  {
-    accessorKey: "department",
-    header: "Department",
-    cell: ({ row }) => <Badge variant='outline'>{row.original.department}</Badge>,
-    enableSorting: false
-  },
-  {
-    accessorKey: "country",
-    header: "Country",
-    enableSorting: false
-  },
-  {
-    accessorKey: "salary",
-    header: ({ column }) => <SortHeader label='Salary' column={column} />,
-    cell: ({ row }) => (
-      <span className='font-mono tabular-nums'>{formatCurrency(row.original.salary, row.original.currency)}</span>
-    )
-  },
-  {
-    accessorKey: "employmentType",
-    header: "Type",
-    cell: ({ row }) => <Badge variant='secondary'>{row.original.employmentType}</Badge>,
-    enableSorting: false
-  },
-  {
-    accessorKey: "hireDate",
-    header: ({ column }) => <SortHeader label='Hire date' column={column} />,
-    cell: ({ row }) => <span className='text-muted-foreground'>{formatDate(row.original.hireDate)}</span>
-  },
-  {
-    id: "actions",
-    header: () => <div className='text-right'>Actions</div>,
-    cell: ({ row }) => (
-      <div className='text-right'>
-        <Button asChild variant='outline'>
-          <Link href={`/employees/${row.original.id}`}>View/Update</Link>
-        </Button>
-      </div>
-    ),
-    enableHiding: false,
-    enableSorting: false
-  }
-];
+function ActionsCell({ employee }: { employee: EmployeeResponse }) {
+  const queryClient = useQueryClient();
+  const [open, setOpen] = React.useState(false);
+  const { mutate, isPending } = useMutation({
+    ...deleteEmployeeMutationOptions(),
+    onSuccess: () => {
+      toast.success(`${employee.fullName} deleted successfully`);
+      queryClient.invalidateQueries({ queryKey: ["employees"] });
+    },
+    onError: (error) => {
+      toast.error(error.message ?? "Failed to delete employee");
+    }
+  });
+
+  return (
+    <div className='text-right flex items-center justify-end gap-2'>
+      <Button asChild variant='outline' className='mr-2'>
+        <Link href={`/employees/${employee.id}`}>View/Update</Link>
+      </Button>
+
+      <AlertDialog open={open} onOpenChange={setOpen}>
+        <AlertDialogTrigger asChild>
+          <Button variant='destructive' size='icon'>
+            <HugeiconsIcon icon={Delete01Icon} strokeWidth={2} />
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Employee</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>{employee.fullName}</strong>? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={isPending}
+              onClick={(e) => {
+                e.preventDefault();
+                mutate(employee.id, {
+                  onSuccess: () => setOpen(false)
+                });
+              }}
+            >
+              {isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}
+
+function useTableColumns() {
+  const columns: ColumnDef<EmployeeResponse>[] = React.useMemo(
+    () => [
+      {
+        accessorKey: "fullName",
+        header: ({ column }) => <SortHeader label='Name' column={column} />,
+        cell: ({ row }) => (
+          <div className='min-w-44'>
+            <Link href={`/employees/${row.original.id}`} className='font-medium text-foreground hover:underline'>
+              {row.original.fullName}
+            </Link>
+            <div className='text-xs text-muted-foreground'>{row.original.email}</div>
+          </div>
+        )
+      },
+      {
+        accessorKey: "jobTitle",
+        header: "Job title",
+        cell: ({ row }) => <span className='text-muted-foreground'>{row.original.jobTitle}</span>,
+        enableSorting: false
+      },
+      {
+        accessorKey: "department",
+        header: "Department",
+        cell: ({ row }) => <Badge variant='outline'>{row.original.department}</Badge>,
+        enableSorting: false
+      },
+      {
+        accessorKey: "country",
+        header: "Country",
+        enableSorting: false
+      },
+      {
+        accessorKey: "salary",
+        header: ({ column }) => <SortHeader label='Salary' column={column} />,
+        cell: ({ row }) => (
+          <span className='font-mono tabular-nums'>{formatCurrency(row.original.salary, row.original.currency)}</span>
+        )
+      },
+      {
+        accessorKey: "employmentType",
+        header: "Type",
+        cell: ({ row }) => <Badge variant='secondary'>{row.original.employmentType}</Badge>,
+        enableSorting: false
+      },
+      {
+        accessorKey: "hireDate",
+        header: ({ column }) => <SortHeader label='Hire date' column={column} />,
+        cell: ({ row }) => <span className='text-muted-foreground'>{formatDate(row.original.hireDate)}</span>
+      },
+      {
+        id: "actions",
+        header: () => <div className='text-right'>Actions</div>,
+        cell: ({ row }) => <ActionsCell employee={row.original} />,
+        enableHiding: false,
+        enableSorting: false
+      }
+    ],
+    []
+  );
+  return columns;
+}
 
 export function EmployeeTable() {
   const router = useRouter();
@@ -152,6 +221,7 @@ export function EmployeeTable() {
   const filters = React.useMemo(() => filtersFromURLSearchParams(searchParams), [searchParams]);
   const { data: employees } = useSuspenseQuery(employeeListOptions(filters));
   const [columnVisibility, setColumnVisibility] = React.useState({});
+  const columns = useTableColumns();
   const sorting = React.useMemo<SortingState>(
     () => (filters.sortBy ? [{ id: filters.sortBy, desc: filters.sortOrder === "desc" }] : []),
     [filters.sortBy, filters.sortOrder]

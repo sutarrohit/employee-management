@@ -1,5 +1,10 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { notFound, onError, pinoLogger, rateLimiter } from "../middlewares/index.js";
+import {
+  notFound,
+  onError,
+  pinoLogger,
+  rateLimiter,
+} from "../middlewares/index.js";
 import { AppBinding } from "./types.js";
 import { defaultHook } from "stoker/openapi";
 import { cors } from "hono/cors";
@@ -18,9 +23,9 @@ export default function createApp() {
     "*",
     cors({
       origin: env.FRONTEND_URL,
-      allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-      credentials: true
-    })
+      allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+      credentials: true,
+    }),
   );
 
   app.notFound(notFound);
