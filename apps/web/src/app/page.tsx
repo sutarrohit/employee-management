@@ -4,12 +4,16 @@ import { getQueryClient } from "@/lib/getQueryClient";
 import {
   globalSummaryOptions,
   salaryDistributionOptions,
-  topEarnersOptions
+  topEarnersOptions,
+  salaryByDepartmentOptions,
+  salaryByCountryOptions
 } from "@/lib/apis/insights/insights-queries";
 import { ChartAreaInteractive } from "@/components/chart-area-interactive";
 import { DataTable } from "@/components/data-table";
 import { SectionCards } from "@/components/section-cards";
 import { SalaryDistribution } from "@/components/salary-distribution";
+import { PayrollByDepartment } from "@/components/payroll-by-department";
+import { CountryInsights } from "@/components/country-insights";
 import { TopEarners } from "@/components/top-earners";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { SiteHeader } from "@/components/sidebar/site-header";
@@ -62,7 +66,9 @@ export default async function Page() {
   await Promise.all([
     queryClient.prefetchQuery(globalSummaryOptions()),
     queryClient.prefetchQuery(salaryDistributionOptions()),
-    queryClient.prefetchQuery(topEarnersOptions(5))
+    queryClient.prefetchQuery(topEarnersOptions(5)),
+    queryClient.prefetchQuery(salaryByDepartmentOptions()),
+    queryClient.prefetchQuery(salaryByCountryOptions())
   ]);
 
   return (
@@ -94,7 +100,24 @@ export default async function Page() {
               </div>
             </div>
 
-            <DataTable data={data} />
+            <div className='grid grid-cols-5 px-4 lg:px-6 gap-4'>
+              <div className='col-span-2'>
+                <div className='col-span-1'>
+                  <Suspense fallback={<SalaryDistributionSkeleton />}>
+                    <HydrationBoundary state={dehydrate(queryClient)}>
+                      <CountryInsights />
+                    </HydrationBoundary>
+                  </Suspense>
+                </div>
+              </div>
+              <div className='col-span-3'>
+                <Suspense fallback={<SalaryDistributionSkeleton />}>
+                  <HydrationBoundary state={dehydrate(queryClient)}>
+                    <PayrollByDepartment />
+                  </HydrationBoundary>
+                </Suspense>
+              </div>
+            </div>
           </div>
         </div>
       </div>
