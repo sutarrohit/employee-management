@@ -4,6 +4,7 @@
 
 @source "../app";
 @source "../components";
+@source "../app/employees/new";
 
 @custom-variant dark (&:is(.dark *));
 
